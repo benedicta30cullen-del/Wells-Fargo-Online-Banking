@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Wells Fargo Online Banking</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#b91c1c;        /* header red */
+    --red-dark:#7f1d1d;   /* deep red */
+    --blue:#1f6feb;       /* transfer page blue */
+    --blue-dark:#153e75;  /* deeper blue */
+    --bg:#f5f7fb;         /* soft page background */
+    --card:#ffffff;       /* panels/cards */
+    --text:#0f172a;       /* main text */
+    --muted:#6b7280;      /* muted text */
+    --border:#e5e7eb;     /* borders */
+    --shadow:0 8px 24px rgba(0,0,0,0.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+
+  /* Auth gate */
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .auth-card{
+    background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
+    padding:20px;max-width:420px;width:100%
+  }
+  .auth-card h1{margin:0 0 8px;font-size:20px}
+  .auth-sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .field{margin-bottom:10px}
+  .label{font-weight:700;font-size:13px;margin-bottom:6px;color:#374151}
+  .input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff}
+  .btn{padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:700}
+  .btn.primary{background:var(--red);border-color:var(--red-dark);color:#fff}
+  .auth-msg{color:var(--muted);font-size:12px;margin-top:8px}
+
+  /* Top bar */
+  .topbar{
+    background:var(--red);color:#fff;display:flex;justify-content:space-between;align-items:center;
+    padding:10px 20px;position:sticky;top:0;z-index:70;border-bottom:2px solid var(--red-dark)
+  }
+  .brand-title{font-weight:800;font-size:18px}
+  .utilities{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .utilities a{color:#fff;text-decoration:none;font-weight:600;cursor:pointer}
+  .profile{display:flex;align-items:center;gap:10px}
+  .avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid #fff;background:#1f2937}
+  .signout{background:#fff;color:var(--red);border:none;padding:6px 10px;border-radius:8px;font-weight:700;cursor:pointer}
+
+  /* Second row tabs */
+  .home-tabs{
+    background:#fff;display:flex;justify-content:center;gap:20px;padding:12px;border-bottom:1px solid var(--border);
+    position:sticky;top:54px;z-index:60
+  }
+  .home-tabs .tab{cursor:pointer;color:var(--red);font-weight:700;padding:6px 10px;border-radius:6px}
+  .home-tabs .tab.active{text-decoration:underline}
+
+  /* Page container */
+  .container{max-width:1100px;margin:0 auto;padding:20px}
+
+  /* Dashboard banner */
+  .banner{
+    background:linear-gradient(135deg,#fff0f0,#ffeaea);
+    border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;position:relative;overflow:hidden
+  }
+  .banner h1{margin:0 0 6px;font-size:22px}
+  .page-sub{color:var(--muted);font-size:14px}
+  .notice{margin-top:10px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px;color:#7c2d12}
+
+  /* Summary metrics */
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+  @media (max-width:860px){ .summary-grid{grid-template-columns:1fr} }
+  .metric{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+  .metric .label{color:var(--muted);font-size:12px;margin-bottom:6px}
+  .metric .value{font-size:22px;font-weight:800}
+  .metric .sub{color:var(--muted);font-size:12px;margin-top:6px}
+
+  /* Panels */
+  .panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.06);margin:16px 0}
+  .panel h2{margin:0 0 10px;font-size:18px}
+  .muted{color:var(--muted)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){ .row{grid-template-columns:1fr} }
+
+  /* Cards */
+  .cards-center{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:8px}
+  .card-tile{
+    width:380px;height:380px;border-radius:16px;padding:22px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow)
+  }
+  .card-tile.red{background:linear-gradient(135deg,var(--red),var(--red-dark))}
+  .card-tile.blue{background:linear-gradient(135deg,var(--blue),var(--blue-dark))}
+  .card-top{display:flex;justify-content:space-between;align-items:center}
+  .chip{width:52px;height:34px;border-radius:6px;background:linear-gradient(135deg,#d4d4d4,#f5f5f5)}
+  .bank-mark{background:#fff;color:var(--red);font-weight:800;padding:4px 8px;border-radius:6px}
+  .visa-badge{background:#fff;color:#1f2937;font-weight:800;padding:4px 8px;border-radius:6px}
+  .mc-badge{display:flex;align-items:center;gap:6px;background:#fff;color:#1f2937;font-weight:800;padding:4px 8px;border-radius:6px}
+  .mc-circle{width:14px;height:14px;border-radius:50%}
+  .mc-red{background:#e63946}
+  .mc-orange{background:#f4a261}
+  .card-num{font-family:monospace;font-size:22px;letter-spacing:2px}
+  .card-footer{display:flex;justify-content:space-between;font-size:14px}
+  .card-holder{font-weight:700}
+  .card-valid{font-weight:600}
+
+  /* History list under cards */
+  .list{display:flex;flex-direction:column;gap:6px}
+  .item{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff}
+
+  /* Quick Actions grid */
+  .qa-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+  @media (max-width:900px){ .qa-grid{grid-template-columns:1fr 1fr} }
+  .qa-tile{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,0.06);cursor:pointer}
+  .qa-tile:hover{box-shadow:0 6px 16px rgba(0,0,0,0.10)}
+
+  /* Footer nav */
+  .footer-nav{
+    background:var(--red);color:#fff;display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding:12px;font-weight:700;border-top:2px solid var(--red-dark)
+  }
+  .footer-nav .tab{cursor:pointer}
+  .footer-nav .tab.active{text-decoration:underline}
+
+  /* Ads and recommendations */
+  .ads{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+  @media (max-width:900px){ .ads{grid-template-columns:1fr} }
+  .ad{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+  .reco{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px}
+  .reco a{display:block;margin:6px 0;color:var(--red);text-decoration:none;font-weight:700}
+
+  /* Inputs and buttons */
+  .input, select{padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#fff}
+  .btn.inline{display:inline-block}
+
+  /* Toast notification */
+  .toast{
+    position:fixed;left:50%;top:16px;transform:translateX(-50%);
+    background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);
+    padding:12px 14px;max-width:640px;width:calc(100% - 24px);z-index:100;color:#7c2d12
+  }
+
+  /* Transfer page (blue and white, full) */
+  .transfer-wrap{background:linear-gradient(180deg,var(--blue),#eaf2ff);min-height:calc(100vh - 54px);padding:20px}
+  .transfer-card{
+    max-width:900px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:16px
+  }
+  .transfer-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .transfer-title{font-size:20px;font-weight:800;color:#0f172a}
+  .transfer-help{color:#1f4d8f;font-weight:700;cursor:pointer}
+  .divider{height:1px;background:var(--border);margin:12px 0}
+
+  /* Legal footer */
+  .legal{background:#fff;color:#333;padding:20px;font-size:12px;line-height:1.55;border-top:1px solid var(--border)}
+  .legal strong{display:block;margin-top:10px}
+</style>
+</head>
+<body>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <!-- Auth Gate -->
+  <div id="auth" class="auth-wrap">
+    <div class="auth-card">
+      <h1>Wells Fargo Online®</h1>
+      <div class="auth-sub">Sign on to view your accounts and manage your finances</div>
+      <div class="field">
+        <div class="label">Username</div>
+        <input id="username" class="input" placeholder="Sarah" autocomplete="username"/>
+      </div>
+      <div class="field">
+        <div class="label">Password</div>
+        <input id="password" type="password" class="input" placeholder="Sarah123" autocomplete="current-password"/>
+      </div>
+      <button id="signInBtn" class="btn primary">Sign On</button>
+      <div id="authMsg" class="auth-msg"></div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app" style="display:none">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="brand-title">Wells Fargo</div>
+      <div class="utilities">
+        <a href="#" data-link="contact">Contact Us</a>
+        <a href="#" data-link="language">Language</a>
+        <a href="#" data-link="locations">Locations</a>
+        <a href="#" data-link="help">Help</a>
+        <a href="#" data-link="about">About Wells Fargo</a>
+        <div class="profile">
+          <img id="navAvatar" class="avatar" alt="Avatar"/>
+          <div style="font-weight:700">Sarah Henry</div>
+          <button id="signOutBtn" class="signout">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second-row tabs -->
+    <div class="home-tabs">
+      <div class="tab active" data-target="home">Home</div>
+      <div class="tab" data-target="cards">Card</div>
+      <div class="tab" data-target="transfer">Transfer</div>
+      <div class="tab" data-target="history">History</div>
+      <div class="tab" data-target="profile">Profile</div>
+    </div>
+
+    <!-- Content -->
+    <div class="container">
+      <!-- Home -->
+      <section id="home" class="section active">
+        <div class="banner">
+          <h1>Good morning, Sarah</h1>
+          <div class="page-sub">Welcome to your Wells Fargo dashboard</div>
+          <div class="notice">⚠️ Account Status Notice: Some services are temporarily limited due to pending verification. Transfers may be delayed.</div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="metric">
+            <div class="label">Everyday Checking — 5888</div>
+            <div class="value" id="balChecking">$1,250,000.00</div>
+            <div class="sub">Available Balance: $1,250,000.00 • Current Balance: $1,250,000.00</div>
+          </div>
+          <div class="metric">
+            <div class="label">Way2Save Savings — 1902</div>
+            <div class="value" id="balSavings">$15,430.00</div>
+            <div class="sub">Available Balance: $15,430.00 • Current Balance: $15,430.00</div>
+          </div>
+          <div class="metric">
+            <div class="label">Active Cash Card — 7603</div>
+            <div class="value" id="balCredit">$0.00</div>
+            <div class="sub">Used Limit: $0.00 • Available Credit: $1,000.00</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Your Cards</h2>
+          <div class="cards-center">
+            <!-- Red debit VISA -->
+            <div class="card-tile red">
+              <div class="card-top">
+                <div class="chip"></div>
+                <div class="bank-mark">Wells Fargo</div>
+                <div class="visa-badge">VISA</div>
+              </div>
+              <div class="card-num">**** **** **** 5888</div>
+              <div class="card-footer">
+                <div class="card-holder">SARAH HENRY</div>
+                <div class="card-valid">VALID THRU 08/29</div>
+              </div>
+            </div>
+            <!-- Blue credit Mastercard -->
+            <div class="card-tile blue">
+              <div class="card-top">
+                <div class="chip"></div>
+                <div class="bank-mark">Wells Fargo</div>
+                <div class="mc-badge">
+                  <div class="mc-circle mc-red"></div>
+                  <div class="mc-circle mc-orange"></div>
+                  Mastercard
+                </div>
+              </div>
+              <div class="card-num">**** **** **** 7603</div>
+              <div class="card-footer">
+                <div class="card-holder">SARAH HENRY</div>
+                <div class="card-valid">VALID THRU 03/30</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent transactions directly below cards -->
+        <div class="panel">
+          <h2>Recent Transactions</h2>
+          <div id="historyUnderCards" class="list">
+            <div class="muted">No transactions yet.</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+          <h2>Quick Actions</h2>
+          <div class="qa-grid">
+            <div class="qa-tile" data-action="transfer">Transfer Money — Move money between accounts</div>
+            <div class="qa-tile" data-action="billpay">Pay Bills — Quickly and securely</div>
+            <div class="qa-tile" data-action="deposit">Mobile Deposit — Deposit checks</div>
+            <div class="qa-tile" data-action="cardctrl">Card Controls — Manage security</div>
+          </div>
+        </div>
+
+        <!-- Ads & Recommendations -->
+        <div class="ads">
+          <div class="ad">
+            <h3>Earn 20,000 bonus points</h3>
+            <p>Plus, earn 3X points on many everyday categories with $0 annual fee. Terms apply.</p>
+            <a href="#" id="promoCard">Learn more ></a>
+          </div>
+          <div class="reco">
+            <h3>Other banks to consider</h3>
+            <a href="#" data-bank="Chase">Chase</a>
+            <a href="#" data-bank="Bank of America">Bank of America</a>
+            <a href="#" data-bank="Citi">Citi</a>
+            <a href="#" data-bank="U.S. Bank">U.S. Bank</a>
+            <a href="#" data-bank="PNC">PNC</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cards section: replace with contact links -->
+      <section id="cards" class="section">
+        <div class="panel">
+          <h2>Support & information</h2>
+          <div class="list">
+            <a href="#" class="item" data-link="contact">Contact Us</a>
+            <a href="#" class="item" data-link="language">Language</a>
+            <a href="#" class="item" data-link="locations">Locations</a>
+            <a href="#" class="item" data-link="help">Help</a>
+            <a href="#" class="item" data-link="about">About Wells Fargo</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transfer section (full blue & white page) -->
+      <section id="transfer" class="section">
+        <div class="transfer-wrap">
+          <div class="transfer-card">
+            <div class="transfer-header">
+              <div class="transfer-title">Transfer</div>
+              <div class="transfer-help" id="tHelp">Help</div>
+            </div>
+            <div class="divider"></div>
+
+            <h2>Between your accounts</h2>
+            <div class="row">
+              <div>
+                <div class="label">From</div>
+                <select id="fromAcct" class="input">
+                  <option value="checking">Everyday Checking ••••5888</option>
+                  <option value="savings">Way2Save Savings ••••1902</option>
+                  <option value="credit">Active Cash Card ••••7603</option>
+                </select>
+              </div>
+              <div>
+                <div class="label">To</div>
+                <select id="toAcct" class="input">
+                  <option value="checking">Everyday Checking ••••5888</option>
+                  <option value="savings">Way2Save Savings ••••1902</option>
+                  <option value="credit">Active Cash Card ••••7603</option>
+                </select>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <div>
+                <div class="label">Amount (USD)</div>
+                <input id="amount" type="number" min="0" step="0.01" class="input" placeholder="0.00"/>
+              </div>
+              <div>
+                <div class="label">Memo (optional)</div>
+                <input id="memo" type="text" class="input" placeholder="e.g., Rent"/>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <button id="doTransfer" class="btn primary inline">Submit transfer</button>
+              <span id="transferMsg" style="margin-left:8px;color:#1f4d8f;font-weight:700"></span>
+            </div>
+
+            <div class="divider" style="margin-top:16px"></div>
+
+            <h2>To an external account</h2>
+            <div class="row">
+              <div>
+                <div class="label">Account number</div>
+                <input id="extAccount" type="text" class="input" placeholder="e.g., 0123456789"/>
+              </div>
+              <div>
+                <div class="label">Routing number</div>
+                <input id="extRouting" type="text" class="input" placeholder="e.g., 021000021"/>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <div>
+                <div class="label">Frequency</div>
+                <select id="extFreq" class="input">
+                  <option>One Time</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div>
+                <div class="label">Transfer date</div>
+                <input id="extDate" type="date" class="input"/>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <div>
+                <div class="label">Amount (USD)</div>
+                <input id="extAmount" type="number" min="0" step="0.01" class="input" placeholder="0.00"/>
+              </div>
+              <div>
+                <div class="label">Memo (optional)</div>
+                <input id="extMemo" type="text" class="input" placeholder="e.g., Wire"/>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <button id="doExternalTransfer" class="btn primary inline">Submit external transfer</button>
+              <span id="extTransferMsg" style="margin-left:8px;color:#1f4d8f;font-weight:700"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- History section -->
+      <section id="history" class="section">
+        <div class="panel">
+          <h2>History</h2>
+          <div id="historyList" class="list">
+            <div class="muted">No transactions yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile section -->
+      <section id="profile" class="section">
+        <div class="panel">
+          <h2>Profile</h2>
+          <div style="display:flex;align-items:center;gap:12px">
+            <img id="profileAvatar" class="avatar" style="width:64px;height:64px;border:1px solid var(--border);background:#eee" alt="Avatar"/>
+            <div>
+              <div class="label">Upload profile picture</div>
+              <input type="file" id="avatarInput" accept="image/*"/>
+            </div>
+          </div>
+          <p class="muted" style="margin-top:8px">Your profile picture will also appear in the top navigation.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer nav -->
+    <div class="footer-nav">
+      <div class="tab" data-target="home">Home</div>
+      <div class="tab" data-target="transfer">Transfer & Pay</div>
+      <div class="tab" data-target="deposit">Deposit</div>
+      <div class="tab" data-target="billpay">Bill Pay</div>
+      <div class="tab" data-target="statements">Statements</div>
+      <div class="tab" data-target="services">Account Services</div>
+      <div class="tab" data-target="security">Security</div>
+    </div>
+
+    <!-- Footer placeholder sections -->
+    <div class="container">
+      <section id="deposit" class="section">
+        <div class="panel">
+          <h2>Deposit</h2>
+          <div>
+            <input id="depAmount" type="number" min="0" step="0.01" class="input" placeholder="Amount"/>
+            <button id="doDeposit" class="btn primary inline" style="margin-left:8px">Record deposit</button>
+            <span id="depositMsg" class="muted" style="margin-left:8px"></span>
+          </div>
+        </div>
+      </section>
+      <section id="billpay" class="section">
+        <div class="panel">
+          <h2>Bill Pay</h2>
+          <p class="muted">Schedule and manage your payments.</p>
+        </div>
+      </section>
+      <section id="statements" class="section">
+        <div class="panel">
+          <h2>Statements</h2>
+          <button id="downloadStmt" class="btn inline">Download statement</button>
+          <span id="stmtMsg" class="muted" style="margin-left:8px"></span>
+        </div>
+      </section>
+      <section id="services" class="section">
+        <div class="panel">
+          <h2>Account Services</h2>
+          <div class="row">
+            <div>
+              <div class="label">Email</div>
+              <input id="svcEmail" type="email" class="input" placeholder="name@example.com"/>
+            </div>
+            <div>
+              <div class="label">Phone</div>
+              <input id="svcPhone" type="tel" class="input" placeholder="+233 ..."/>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button id="saveServices" class="btn primary inline">Save</button>
+            <span id="svcMsg" class="muted" style="margin-left:8px"></span>
+          </div>
+        </div>
+      </section>
+      <section id="security" class="section">
+        <div class="panel">
+          <h2>Security</h2>
+          <div class="row">
+            <div>
+              <div class="label">New PIN</div>
+              <input id="secPin" type="password" class="input" placeholder="••••"/>
+            </div>
+            <div>
+              <div class="label">Confirm PIN</div>
+              <input id="secPin2" type="password" class="input" placeholder="••••"/>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button id="savePin" class="btn primary inline">Update PIN</button>
+            <span id="secMsg" class="muted" style="margin-left:8px"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Legal footer -->
+    <div class="legal">
+      <strong>Privacy, Cookies, Security & Legal</strong>
+      Do Not Sell or Share My Personal Information • Notice of Data Collection • General Terms of Use • Online Access Agreement • Report Fraud • About Wells Fargo • Careers • Inclusion and Accessibility • Sitemap
+
+      <strong>Investment and Insurance Products are:</strong>
+      Not Insured by the FDIC or Any Federal Government Agency • Not a Deposit or Other Obligation of, or Guaranteed by, the Bank or Any Bank Affiliate • Subject to Investment Risks, Including Possible Loss of the Principal Amount Invested
+
+      Investment products and services are offered through Wells Fargo Advisors. Wells Fargo Advisors is a trade name used by Wells Fargo Clearing Services, LLC (WFCS) and Wells Fargo Advisors Financial Network, LLC, Members SIPC, separate registered broker-dealers and non-bank affiliates of Wells Fargo & Company.
+
+      <span class="muted">1. Availability may be affected by your mobile carrier’s coverage area. Your mobile carrier’s message and data rates may apply. Fargo is only available on the smartphone versions of the Wells Fargo Mobile® app.</span>
+      <span class="muted">Android, Google Play, Chrome, Pixel and other marks are trademarks of Google LLC.</span>
+      <span class="muted">Apple, the Apple logo, Apple Pay, Apple Watch, Face ID, iCloud Keychain, iPad, iPad Pro, iPhone, iTunes, Mac, Safari, and Touch ID are trademarks of Apple Inc., registered in the U.S. and other countries. Apple Wallet is a trademark of Apple Inc. App Store is a service mark of Apple Inc.</span>
+      <span class="muted">Deposit products offered by Wells Fargo Bank, N.A. Member FDIC.</span>
+      <span class="muted">Equal Housing Lender</span>
+      <span class="muted">PM-09282026-7798034.1.1</span>
+      <span class="muted">LRC-0325</span>
+      <span class="muted">© 1999 - 2026 Wells Fargo. NMLSR ID 399801.</span>
+    </div>
+  </div>
+
+<script>
+  // State
+  const state = {
+    balances: { checking: 1250000.00, savings: 15430.00, credit: 0.00 },
+    avatar: "",
+    history: [] // {time, type, desc, amount, memo}
+  };
+  const fmt = v => v.toLocaleString(undefined,{style:"currency",currency:"USD"});
+
+  // Toast
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    setTimeout(()=>{ t.style.display = "none"; }, 6000);
+  }
+
+  // Sign in: Sarah / Sarah123
+  document.getElementById("signInBtn").addEventListener("click", ()=>{
+    const u = (document.getElementById("username").value || "").trim();
+    const p = (document.getElementById("password").value || "").trim();
+    const msg = document.getElementById("authMsg");
+    if(u !== "Sarah"){ msg.textContent = "Incorrect username."; return; }
+    if(p !== "Sarah123"){ msg.textContent = "Incorrect password."; return; }
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    renderAll();
+  });
+
+  // Sign out
+  document.getElementById("signOutBtn").addEventListener("click", ()=>{
+    document.getElementById("app").style.display = "none";
+    document.getElementById("auth").style.display = "flex";
+    document.getElementById("authMsg").textContent = "";
+  });
+
+  // Tabs
+  function showSection(id){
+    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+    const el = document.getElementById(id);
+    if(el) el.classList.add("active");
+    document.querySelectorAll(".home-tabs .tab").forEach(t=>{
+      t.classList.toggle("active", t.getAttribute("data-target")===id);
+    });
+    document.querySelectorAll(".footer-nav .tab").forEach(t=>{
+      t.classList.toggle("active", t.getAttribute("data-target")===id);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  document.querySelectorAll(".home-tabs .tab").forEach(tab=>{
+    tab.addEventListener("click", ()=> showSection(tab.getAttribute("data-target")));
+  });
+  document.querySelectorAll(".footer-nav .tab").forEach(tab=>{
+    tab.addEventListener("click", ()=> showSection(tab.getAttribute("data-target")));
+  });
+
+  // Utilities and support links
+  function handleLinkClick(text){
+    showToast(text);
+  }
+  document.querySelectorAll(".utilities a").forEach(a=>{
+    a.addEventListener("click",(e)=>{ e.preventDefault(); handleLinkClick(a.textContent); });
+  });
+  document.querySelectorAll("#cards .item, .reco a, #promoCard").forEach(a=>{
+    a.addEventListener("click",(e)=>{ e.preventDefault(); handleLinkClick(a.textContent); });
+  });
+
+  // Quick actions
+  document.querySelectorAll(".qa-tile").forEach(tile=>{
+    tile.addEventListener("click", ()=>{
+      const act = tile.getAttribute("data-action");
+      if(act==="transfer") showSection("transfer");
+      else handleLinkClick(tile.textContent);
+    });
+  });
+
+  // Avatar upload
+  document.getElementById("avatarInput").addEventListener("change",(e)=>{
+    const file = e.target.files?.[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      state.avatar = reader.result;
+      renderAvatar();
+      renderProfileAvatar();
+    };
+    reader.readAsDataURL(file);
+  });
+  function renderAvatar(){
+    const nav = document.getElementById("navAvatar");
+    const placeholderMini = "data:image/svg+xml;base64,"+btoa(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34'><rect width='100%' height='100%' fill='#1f2937'/></svg>`);
+    nav.src = state.avatar || placeholderMini;
+  }
+  function renderProfileAvatar(){
+    const prof = document.getElementById("profileAvatar");
+    const placeholderBig  = "data:image/svg+xml;base64,"+btoa(`<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='#ddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='12' fill='#777'>Avatar</text></svg>`);
+    prof.src = state.avatar || placeholderBig;
+  }
+
+  // Render balances
+  function renderBalances(){
+    document.getElementById("balChecking").textContent = fmt(state.balances.checking);
+    document.getElementById("balSavings").textContent  = fmt(state.balances.savings);
+    document.getElementById("balCredit").textContent   = fmt(state.balances.credit);
+  }
+
+  // Render history
+  function renderHistory(){
+    const list = document.getElementById("historyList");
+    const under = document.getElementById("historyUnderCards");
+    [list, under].forEach(el=>{
+      el.innerHTML = "";
+      if(!state.history.length){
+        const d = document.createElement("div");
+        d.className="muted"; d.textContent="No transactions yet.";
+        el.appendChild(d); return;
+      }
+      state.history.slice().reverse().forEach(h=>{
+        const item = document.createElement("div");
+        item.className="item";
+        const amt = fmt(h.amount);
+        item.textContent = `${h.time} • ${h.type} • ${h.desc} • ${amt}${h.memo?` • ${h.memo}`:""}`;
+        el.appendChild(item);
+      });
+    });
+  }
+
+  // Internal transfer (notification only)
+  document.getElementById("doTransfer").addEventListener("click", ()=>{
+    const from = document.getElementById("fromAcct").value;
+    const to   = document.getElementById("toAcct").value;
+    const amt  = parseFloat(document.getElementById("amount").value || "0");
+    const memo = (document.getElementById("memo").value || "").trim();
+    const msg  = document.getElementById("transferMsg");
+
+    if(!isFinite(amt) || amt<=0){ msg.textContent="Enter a valid amount."; return; }
+    if(from===to){ msg.textContent="Choose different source and destination."; return; }
+
+    state.history.push({
+      time: new Date().toLocaleString(),
+      type: "Transfer",
+      desc: `${from} → ${to}`,
+      amount: amt,
+      memo
+    });
+    renderHistory();
+
+    showToast("Dear Sarah,\nWe are sorry to inform you that, this transaction is on pending due to the main web online transfer charges $$");
+    msg.textContent = "";
+    document.getElementById("amount").value="";
+    document.getElementById("memo").value="";
+    showSection("history");
+  });
+
+  // External transfer (notification only)
+  document.getElementById("doExternalTransfer").addEventListener("click", ()=>{
+    const acct = (document.getElementById("extAccount").value || "").trim();
+    const rout = (document.getElementById("extRouting").value || "").trim();
+    const freq = document.getElementById("extFreq").value;
+    const date = document.getElementById("extDate").value;
+    const amt  = parseFloat(document.getElementById("extAmount").value || "0");
+    const memo = (document.getElementById("extMemo").value || "").trim();
+    const msg  = document.getElementById("extTransferMsg");
+
+    if(!acct || !rout){ msg.textContent="Enter account and routing numbers."; return; }
+    if(!isFinite(amt) || amt<=0){ msg.textContent="Enter a valid amount."; return; }
+
+    state.history.push({
+      time: new Date().toLocaleString(),
+      type: "External transfer",
+      desc: `Acct ${acct} • Rout ${rout} • ${freq} • ${date||"No date"}`,
+      amount: amt,
+      memo
+    });
+    renderHistory();
+
+    showToast("Dear Sarah,\nWe are sorry to inform you that, this transaction is on pending due to the main web online transfer charges $$");
+    msg.textContent = "";
+    document.getElementById("extAccount").value="";
+    document.getElementById("extRouting").value="";
+    document.getElementById("extAmount").value="";
+    document.getElementById("extMemo").value="";
+    showSection("history");
+  });
+
+  // Deposit (logged in history)
+  document.getElementById("doDeposit").addEventListener("click", ()=>{
+    const amt = parseFloat(document.getElementById("depAmount").value || "0");
+    const msg = document.getElementById("depositMsg");
+    if(!isFinite(amt) || amt<=0){ msg.textContent="Enter a valid amount."; return; }
+    state.history.push({
+      time: new Date().toLocaleString(),
+      type: "Deposit",
+      desc: "Cash to checking",
+      amount: amt,
+      memo: ""
+    });
+    renderHistory();
+    msg.textContent = "Deposit recorded.";
+    setTimeout(()=>{ msg.textContent=""; }, 3500);
+    document.getElementById("depAmount").value="";
+  });
+
+  // Statements
+  document.getElementById("downloadStmt").addEventListener("click", ()=>{
+    const msg = document.getElementById("stmtMsg");
+    const txt = `Statement\nUser: Sarah Henry\nChecking: ${fmt(state.balances.checking)}\nSavings: ${fmt(state.balances.savings)}\nCredit: ${fmt(state.balances.credit)}\nTransactions: ${state.history.length}\nGenerated: ${new Date().toLocaleString()}`;
+    const blob = new Blob([txt], {type:"text/plain"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "statement.txt"; a.click();
+    URL.revokeObjectURL(url);
+    msg.textContent = "Statement downloaded.";
+    setTimeout(()=>{ msg.textContent=""; }, 3500);
+  });
+
+  // Services & security
+  document.getElementById("saveServices").addEventListener("click", ()=>{
+    document.getElementById("svcMsg").textContent = "Contact info saved.";
+    setTimeout(()=>{ document.getElementById("svcMsg").textContent=""; }, 3500);
+  });
+  document.getElementById("savePin").addEventListener("click", ()=>{
+    const p1 = document.getElementById("secPin").value;
+    const p2 = document.getElementById("secPin2").value;
+    const msg = document.getElementById("secMsg");
+    if(p1.length < 4){ msg.textContent="PIN must be at least 4 digits."; return; }
+    if(p1 !== p2){ msg.textContent="PINs do not match."; return; }
+    msg.textContent = "PIN updated.";
+    setTimeout(()=>{ msg.textContent=""; }, 3500);
+    document.getElementById("secPin").value="";
+    document.getElementById("secPin2").value="";
+  });
+
+  // Initial render
+  function renderAll(){ renderBalances(); renderAvatar(); renderProfileAvatar(); renderHistory(); }
+
+  // Help click
+  document.getElementById("tHelp").addEventListener("click", ()=>{
+    showToast("Transfers may be delayed due to verification and online transfer charges.");
+  });
+</script>
+</body>
+</html>
